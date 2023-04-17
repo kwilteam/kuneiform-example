@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+#
+# Check if the Kwil CLI is installed
+#
+
+set -eu
+
+. ./scripts/.kwil_variables
+
+# Define the check_cli_installed function
+check_cli_installed() {
+  if ! command -v "$CLI_COMMAND" > /dev/null 2>&1; then
+    echo "Error: ${$CLI_COMMAND} is not installed or not in your PATH.  Download it from ${CLI_URL}"
+    exit 1
+  fi
+}
+
+export -f check_cli_installed

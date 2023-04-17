@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+#
+# Deploy a Kuneiform database to Kwil
+#
+
+set -eu
+
+DEPLOYMENT_TARGET=${DEPLOYMENT_TARGET:-"./kuneiform/social_network.kf"}
+CLI_COMMAND=${CLI_COMMAND:-"kwil-cli"}
+CLI_URL=${CLI_URL:-"https://github.com/kwilteam/kwil-cli/releases/latest"}
+KWIL_PROVIDER=${1:-"localhost:50051"}
+
+export KWIL_PROVIDER
+export DEPLOYMENT_TARGET
+export CLI_COMMAND
+export CLI_URL

@@ -1,0 +1,202 @@
+database ecclesia;
+
+// table for storing users
+// each wallet can have a user
+table users {
+    id int primary notnull,
+    username text notnull unique minlen(5) maxlen(32),
+    age int notnull max(69),
+    address text notnull unique // wallet address
+}
+
+// table for storing posts
+table posts {
+    id int primary notnull,
+    title text notnull maxlen(300),
+    content text notnull maxlen(10000),
+    author_id int notnull,
+}
+
+// table to track who likes certain posts
+table likes {
+    user_id int notnull,
+    post_id int notnull,
+    #like_index unique(user_id, post_id)
+}
+
+// table to track commenting on posts
+table comments {
+    id int primary notnull,
+    post_id int notnull,
+    content text notnull maxlen(200),
+    commenter_id int notnull,
+    #comment_index index(post_id)
+}
+
+// table for follower relationships
+table followers {
+    follower_id int notnull,
+    followed_id int notnull,
+    #follower_index unique(follower_id, followed_id)
+}
+
+// a public action for creating a user
+action create_user ($id, $username, $age) public {
+    INSERT INTO users
+    VALUES ($id, $username, $age, @caller);
+}
+
+// a public action for updating mutable user data
+action update_user ($username, $age) public {
+    UPDATE users
+    SET username=$username, age=$age
+    WHERE address=@caller;
+}
+
+// action for posting
+action create_post ($id, $title, $content) public {
+    INSERT INTO posts
+    VALUES ($id, $title, $content, (
+        SELECT id
+        FROM users
+        WHERE address=@caller
+    ))
+}
+
+// action for deleting posts posted by the caller
+// it is important to use a subquery here instead of a join,
+// since delete joins are not yet supported
+action delete_post ($id) public {
+    DELETE FROM posts
+    WHERE id=$id
+    AND author_id = (
+        SELECT id
+        FROM users
+        WHERE address=@caller
+    );
+}
+
+// action for deleting any post. this can only be done
+// by the database owner
+action delete_any_post ($id) private {
+    DELETE FROM posts
+    WHERE id=$id;
+}
+
+// action for liking posts
+action like_post($post_id) public {
+    INSERT INTO likes (user_id, post_id)
+    VALUES ((
+        SELECT id
+        FROM users
+        WHERE address = @caller
+    ),
+    $post_id);
+}
+
+// action for unliking a post
+action unlike_post($post_id) public {
+    DELETE FROM likes
+    WHERE post_id=$post_id
+    AND user_id = (
+        SELECT id
+        FROM users
+        WHERE address=@caller
+    );
+}
+
+// action for making a comment on a post
+action add_comment($post_id, $comment_id, $content) public {
+    INSERT INTO comments (id, post_id, content, commenter_id)
+    VALUES ($comment_id, $post_id, $content, (
+        SELECT id
+        FROM users
+        WHERE address = @caller
+        )
+    );
+}
+
+// action for deleting your own comment from a post
+action delete_comment($id) public {
+    DELETE FROM comments
+    WHERE id=$id
+    AND commenter_id = (
+        SELECT id
+        FROM users
+        WHERE address=@caller
+    );
+}
+
+// getters
+action get_user_by_username($username) public {
+    SELECT *
+    FROM users
+    WHERE username=$username
+}
+
+action get_user_by_wallet($address) public {
+    SELECT *
+    FROM users
+    WHERE address = $address
+}
+
+action get_recent_posts_from_user($address) public {
+    SELECT posts.id, posts.title, posts.content, posts.author_id
+    FROM posts
+    INNER JOIN users ON posts.author_id = users.id
+    WHERE users.address = $address
+    LIMIT 20;
+}
+
+action get_comments_for_post($post_id) public {
+    SELECT comments.content AS comment, users.username AS username
+    FROM comments
+    INNER JOIN users ON comments.commenter_id = users.id
+    WHERE comments.post_id = $post_id;
+}
+
+action get_likes_for_post($post_id) public {
+    SELECT count(user_id)
+    FROM likes
+    WHERE post_id = $post_id;
+}
+
+// in this action, we have to use a subquery for the
+// many-to-many relationship.  this is due to aliases
+// not currently being supported and that we have to
+// join the users table twice
+action list_followers($username) public {
+    SELECT users.username
+    FROM users
+    INNER JOIN followers ON users.id=followers.follower_id
+    WHERE followers.followed_id = (
+        SELECT id
+        FROM users
+        WHERE username = $username
+    );
+}
+
+// same as the query above, but gets who a user
+// follows
+action list_following($username) public {
+    SELECT users.username
+    FROM users
+    INNER JOIN followers ON users.id=followers.followed_id
+    WHERE followers.follower_id = (
+        SELECT id
+        FROM users
+        WHERE username = $username
+    );
+}
+
+action get_feed($username) public {
+    SELECT posts.id, posts.title, posts.content, users.username
+    FROM posts
+    INNER JOIN followers ON posts.author_id = followers.followed_id
+    INNER JOIN users ON users.id = followers.followed_id
+    WHERE follower_id = (
+        SELECT id
+        FROM users
+        WHERE username = $username
+    );
+}
