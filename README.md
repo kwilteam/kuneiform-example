@@ -13,7 +13,7 @@ show these features.
 
 ## Contents
 The example repo is broken down into the following format:
-- Kuneiform: The Kuneiform directory contains the file(s) that will be deployed to the Kwil network.
-- Typescript: The Typescript directory contains a basic library for interacting with the deployed database.
-- Python: The Python directory contains a Python library for interacting with the deployed database.
+- ROOT: the root level contains the example kuneiform file, and some test data that can be used to seed the database
+- ./typescript: The Typescript directory contains a basic library for interacting with the deployed database.
+- ./python: The Python directory contains a Python library for interacting with the deployed database.
 
