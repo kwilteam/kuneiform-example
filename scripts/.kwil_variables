@@ -5,12 +5,18 @@
 
 set -eu
 
-DEPLOYMENT_TARGET=${DEPLOYMENT_TARGET:-"./kuneiform/social_network.kf"}
+DEPLOYMENT_TARGET=${DEPLOYMENT_TARGET:-"./social_network.kf"}
 CLI_COMMAND=${CLI_COMMAND:-"kwil-cli"}
 CLI_URL=${CLI_URL:-"https://github.com/kwilteam/kwil-cli/releases/latest"}
-KWIL_PROVIDER=${1:-"localhost:50051"}
+KWIL_PROVIDER=${KWIL_PROVIDER:-"grpc.kwil.com:80"}
+GOERLI_RPC_URL=${GOERLI_RPC_URL:-"https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"}
+PRIVATE_KEY=${PRIVATE_KEY:-""}
+DATABASE_NAME=${DATABASE_NAME:-"ecclesia"}
 
 export KWIL_PROVIDER
 export DEPLOYMENT_TARGET
+export GOERLI_RPC_URL
 export CLI_COMMAND
 export CLI_URL
+export PRIVATE_KEY
+export DATABASE_NAME

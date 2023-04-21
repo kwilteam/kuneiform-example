@@ -40,6 +40,36 @@ table followers {
     #follower_index unique(follower_id, followed_id)
 }
 
+// seed actions:
+// private actions that can be used to seed data for development
+
+action seed_user($id, $username, $age, $address) private {
+    INSERT INTO users
+    VALUES ($id, $username, $age, $address);
+}
+
+action seed_post($id, $title, $content, $author_id) private {
+    INSERT INTO posts
+    VALUES ($id, $title, $content, $author_id);
+}
+
+action seed_like($liker_id, $post_id) private {
+    INSERT INTO likes
+    VALUES ($liker_id, $post_id);
+}
+
+action seed_comment($id, $post_id, $content, $commenter_id) private {
+    INSERT INTO comments
+    VALUES ($id, $post_id, $content, $commenter_id);
+}
+
+action seed_follower($follower_id, $followee_id) private {
+    INSERT INTO followers
+    VALUES ($follower_id, $followee_id);
+}
+
+// functional actions:
+
 // a public action for creating a user
 action create_user ($id, $username, $age) public {
     INSERT INTO users
@@ -125,6 +155,22 @@ action delete_comment($id) public {
         FROM users
         WHERE address=@caller
     );
+}
+
+// action for following a user
+action follow($username) public {
+    INSERT INTO followers (follower_id, followed_id)
+    VALUES ((SELECT id FROM users WHERE address = @caller),
+    (SELECT id FROM users WHERE username = $username))
+}
+
+// unfollow a user
+// since Kwil does not support joins in deletes,
+// we double subquery
+action unfollow($username) public {
+    DELETE FROM followers
+    WHERE followers.followed_id = (SELECT id FROM users WHERE username = $username)
+    AND followers.follower_id = (SELECT id FROM users WHERE address = @caller);
 }
 
 // getters
