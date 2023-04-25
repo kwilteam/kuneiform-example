@@ -17,7 +17,7 @@ async function run() {
             res = await client.createPost(101, "my post", "my body")
             break
         case "get user":
-            res = await client.getUser("Santa Claus") // part of the seeded data
+            res = await client.getUser("satoshi") // part of the seeded data
             break
         case "get feed":
             res = await client.getFeed("Santa Claus") // peer-reviewed studies have found that Santa has the best feed of the seeded data

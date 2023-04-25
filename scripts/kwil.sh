@@ -13,7 +13,6 @@ check_cli_installed
 
 # Deploy
 deploy() {
-    echo " $PRIVATE_KEY $KWIL_PROVIDER "
     echo " Deploying ${DEPLOYMENT_TARGET} to Kwil at ${KWIL_PROVIDER} "
 
     # Deploy the database
