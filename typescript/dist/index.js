@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SocialClient = void 0;
-const luke_dev_1 = require("luke-dev");
+const kwil_1 = require("kwil");
 const ethers_1 = require("ethers");
 require("dotenv").config();
 // name of the database
@@ -19,15 +19,15 @@ const databaseName = "ecclesia";
 class SocialClient {
     constructor(kwilEndpoint, ethEndpoint, privateKey) {
         this.wallet = new ethers_1.ethers.Wallet(privateKey, new ethers_1.ethers.JsonRpcProvider(ethEndpoint));
-        this.dbid = luke_dev_1.Utils.generateDBID(databaseName, this.wallet.address);
-        this.kwil = new luke_dev_1.NodeKwil({
+        this.dbid = kwil_1.Utils.generateDBID(databaseName, this.wallet.address);
+        this.kwil = new kwil_1.NodeKwil({
             kwilProvider: kwilEndpoint,
         });
     }
     // for executing any action
     executeAction(actionName, inputs) {
         return __awaiter(this, void 0, void 0, function* () {
-            const actionInput = new luke_dev_1.Utils.ActionInput();
+            const actionInput = new kwil_1.Utils.ActionInput();
             for (const [key, value] of Object.entries(inputs)) {
                 actionInput.put(key, value);
             }

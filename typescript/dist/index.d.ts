@@ -1,5 +1,5 @@
 import { User, Comment, Post } from "./models";
-import { Types } from 'luke-dev';
+import { Types } from 'kwil';
 export declare class SocialClient {
     private readonly wallet;
     private readonly dbid;
