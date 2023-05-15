@@ -4,7 +4,7 @@ export interface User {
     age: number;
     address: string;
 }
-export declare type UserIdentifier = User | string | number;
+export type UserIdentifier = User | string | number;
 export interface Post<A extends UserIdentifier> {
     id: number;
     title: string;

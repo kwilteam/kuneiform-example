@@ -1,5 +1,5 @@
 import { User, Comment, Post } from "./models";
-import {NodeKwil, Utils, Types } from 'Kwil'
+import {NodeKwil, Utils, Types } from 'kwil'
 import { ethers } from "ethers";
 require("dotenv").config()
 
@@ -22,21 +22,21 @@ export class SocialClient {
 
     // for executing any action
     private async executeAction(actionName:string, inputs: Object): Promise<Types.TxReceipt> {
-        const action = await this.kwil.getAction(this.dbid, actionName)
-        const execution = action.newInstance()
+        const actionInput: Types.ActionInput = new Utils.ActionInput()
 
         for (const [key, value] of Object.entries(inputs)) {
-            execution.set(key, value)
+            actionInput.put(key, value)
         }
 
-        if(!action.isComplete()) {
-            console.log(execution)
-            throw new Error("All inputs must be set!")
-        }
-
-        let tx = await action.prepareAction(this.wallet)
+        const actionTx: Types.Transaction = await this.kwil
+            .actionBuilder()
+            .name(actionName)
+            .dbid(this.dbid)
+            .concat(actionInput)
+            .signer(this.wallet)
+            .buildTx();
         
-        const res = await this.kwil.broadcast(tx)
+        const res = await this.kwil.broadcast(actionTx)
 
         if (res.data === undefined) {
             throw new Error("error executing action")

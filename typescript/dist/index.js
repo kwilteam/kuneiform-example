@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SocialClient = void 0;
-const Kwil_1 = require("Kwil");
+const luke_dev_1 = require("luke-dev");
 const ethers_1 = require("ethers");
 require("dotenv").config();
 // name of the database
@@ -19,25 +19,26 @@ const databaseName = "ecclesia";
 class SocialClient {
     constructor(kwilEndpoint, ethEndpoint, privateKey) {
         this.wallet = new ethers_1.ethers.Wallet(privateKey, new ethers_1.ethers.JsonRpcProvider(ethEndpoint));
-        this.dbid = Kwil_1.Utils.generateDBID(databaseName, this.wallet.address);
-        this.kwil = new Kwil_1.NodeKwil({
+        this.dbid = luke_dev_1.Utils.generateDBID(databaseName, this.wallet.address);
+        this.kwil = new luke_dev_1.NodeKwil({
             kwilProvider: kwilEndpoint,
         });
     }
     // for executing any action
     executeAction(actionName, inputs) {
         return __awaiter(this, void 0, void 0, function* () {
-            const action = yield this.kwil.getAction(this.dbid, actionName);
-            const execution = action.newInstance();
+            const actionInput = new luke_dev_1.Utils.ActionInput();
             for (const [key, value] of Object.entries(inputs)) {
-                execution.set(key, value);
+                actionInput.put(key, value);
             }
-            if (!action.isComplete()) {
-                console.log(execution);
-                throw new Error("All inputs must be set!");
-            }
-            let tx = yield action.prepareAction(this.wallet);
-            const res = yield this.kwil.broadcast(tx);
+            const actionTx = yield this.kwil
+                .actionBuilder()
+                .name(actionName)
+                .dbid(this.dbid)
+                .concat(actionInput)
+                .signer(this.wallet)
+                .buildTx();
+            const res = yield this.kwil.broadcast(actionTx);
             if (res.data === undefined) {
                 throw new Error("error executing action");
             }
